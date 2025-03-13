@@ -22,13 +22,31 @@ local buffoonY = 0
 local winCondition = false
 local moveCount = 0
 local winCount = 0
+local distNumber = 0
+local buffoonCount = 0
 
 function generateTable()
     -- create the table of numbers
+    math.randomseed(os.time())
     for i = 1, #allNumbers, 1 do
         for j = 1, #allNumbers[i], 1 do
             allNumbers[i][j] = math.random(1,9)
         end
+    end
+end
+
+function generateNewNumber()
+    -- create a new number in a blank square with a skewed distribution
+    math.randomseed(os.time())
+    distNumber = math.random()
+    if distNumber < 0.25 then
+        return math.random(1,9)
+    else
+        i = ""
+        while i == "" do
+            i = allNumbers[math.random(1,4)][math.random(1,4)]
+        end
+        return i
     end
 end
 
@@ -101,7 +119,7 @@ function love.keypressed(key)
     -- enter key makes the currently selected number active
     if (key == "return") and noActive then
         if allNumbers[activeCell[2]][activeCell[1]] == "" then -- if enter is pressed in a blank cell, a new random number is generated
-            allNumbers[activeCell[2]][activeCell[1]] = math.random(1, 9)
+            allNumbers[activeCell[2]][activeCell[1]] = generateNewNumber()
             moveCount = moveCount + 1
         else
             selectedCell[1] = activeCell[1]
@@ -156,6 +174,7 @@ function love.update(dt)
         if elapsedTime > 2 then
             elapsedTime = 0
             buffoon = false
+            buffoonCount = buffoonCount + 1
         end
     elseif winCondition then
         if elapsedTime > 3 then
@@ -199,9 +218,14 @@ function love.draw()
     --     love.graphics.print("\nSelected Cell: " .. selectedCell[1] .. selectedCell[2])
     --     love.graphics.print("\n\nSelected Number: " .. selectedNumber)
     -- end
+    -- love.graphics.print("                         ".. distNumber)
     
     love.graphics.print("Move count: " .. moveCount)
     love.graphics.print("\nWin count: " .. winCount)
+
+    if buffoonCount > 0 then
+        love.graphics.print("Buffoon count: " .. buffoonCount, 0, love.graphics.getHeight() - 2 * numberHeight)
+    end
 
     for i = 1, #columnX, 1 do
         for j = 1, #rowY, 1 do
